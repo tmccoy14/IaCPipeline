@@ -5,8 +5,8 @@ steps:
 
   # setup aws directory
   - id: setup aws directory
-    name: "ubuntu"
-    entrypoint: "bash"
+    name: ubuntu
+    entrypoint: bash
     args:
       - "-c"
       - |
