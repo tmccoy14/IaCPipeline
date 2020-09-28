@@ -1,7 +1,7 @@
 steps:
   # set aws credentials
   - id: aws credentials
-    name: ubunut
+    name: ubuntu
     entrypoint: "bash"
     args:
       - "c"
