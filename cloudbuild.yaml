@@ -1,19 +1,47 @@
 steps:
-  # When creating secrets, it's usually best practice to create
-  # a secret file with the contents there but to simplify for now
-  # I just used the GCP Cloud Build environment variables
+  # creates a python virtualenv stored in /workspace/venv that will persist across container runs
+  - id: virtual envrionment
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: /bin/bash
+    args: ["-c", "virtualenv /workspace/venv"]
 
-  # setup aws directory
-  - id: setup aws directory
-    name: ubuntu
-    entrypoint: bash
+  # installs dependencies
+  - id: install requirements
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: venv/bin/pip
+    args: ["install", "awscli", "checkov"]
+    waitFor:
+      - virtual envrionment
+
+  # set aws access key id
+  - id: set aws access key id
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: venv/bin/aws
+    args: ["configure", "set", "aws_access_key_id", "${_AWS_ACCESS_KEY_ID}"]
+    waitFor:
+      - install requirements
+
+  # set aws secret access key id
+  - id: set aws secret access key id
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: venv/bin/aws
     args:
-      - "-c"
-      - |
-        echo 'Setting AWS CLI credentials...'
-        mkdir -p ~/.aws
-        echo "[default]\nregion = us-east-1" >> ~/.aws/config
-        echo "[default]\naws_access_key_id = ${_AWS_ACCESS_KEY}\naws_secret_access_key = ${_AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+      [
+        "configure",
+        "set",
+        "aws_secret_access_key",
+        "${_AWS_SECRET_ACCESS_KEY_ID}",
+      ]
+    waitFor:
+      - set aws access key id
+
+  # set aws region
+  - id: set aws region
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: venv/bin/aws
+    args: ["configure", "set", "region", "${AWS_REGION}"]
+    waitFor:
+      - set aws secret access key id
 
   # initialize the working Terraform directory
   - id: terraform init
@@ -24,6 +52,8 @@ steps:
       - |
         cd tfstate
         terraform init
+    waitFor:
+      - set aws region
 
   # create an execution plan
   - id: terraform plan
@@ -34,6 +64,8 @@ steps:
       - |
         cd tfstate
         terraform plan
+    waitFor:
+      - terraform init
 
   # apply the new or updated resources
   - id: terraform apply
@@ -44,8 +76,16 @@ steps:
       - |
         cd tfstate
         terraform apply -auto-approve
+    waitFor:
+      - terraform plan
 
-  # NEED TO ADD CHECKOV STEP HERE
+  # run compliance and vulnerability checks with checkov
+  - id: run checkov
+    name: us.gcr.io/$PROJECT_ID/gcloud-python
+    entrypoint: venv/bin/checkov
+    args: ["-d", "tfstate/"]
+    waitFor:
+      - terraform apply
 
   # destroy the Terraform managed infrastructure
   - id: terraform destroy
@@ -56,3 +96,5 @@ steps:
       - |
         cd tfstate
         terraform destroy -auto-approve
+    waitFor:
+      - run checkov
