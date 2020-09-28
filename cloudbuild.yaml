@@ -1,26 +1,40 @@
 steps:
-  # set aws credentials
-  - id: aws credentials
-    name: ubuntu
+  # setup aws directory
+  - id: setup aws directory
+    name: "ubuntu"
     entrypoint: "bash"
     args:
+      - "-c"
       - |
         echo 'Setting AWS CLI credentials...'
         mkdir -p ~/.aws
+        echo ${_AWS_ACCESS_KEY}
   #       echo "[default]\nregion = us-east-1" >> ~/.aws/config
   #       echo "[default]\naws_access_key_id = ${AWS_ACCESS_KEY_ID}\naws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
   # # initialize the working Terraform directory
   # - id: terraform init
   #   name: hashicorp/terraform:0.12.26
   #   entrypoint: "sh"
-  #   args: ["cd tfstate && terraform init"]
+  #   args:
+  #     - "-c"
+  #     - |
+  #       cd tfstate
+  #       terraform init
   # # create an execution plan
   # - id: terraform plan
   #   name: hashicorp/terraform:0.12.26
   #   entrypoint: "sh"
-  #   args: ["cd tfstate && terraform plan"]
+  #   args:
+  #     - "-c"
+  #     - |
+  #       cd tfstate
+  #       terraform plan
   # # apply the new or updated resources
   # - id: terraform apply
   #   name: hashicorp/terraform:0.12.26
   #   entrypoint: "sh"
-  #   args: ["cd tfstate && terraform apply -auto-approve"]
+  #   args:
+  #     - "-c"
+  #     - |
+  #       cd tfstate
+  #       terraform apply -auto-approve
