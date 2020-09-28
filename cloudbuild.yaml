@@ -98,3 +98,19 @@ steps:
         terraform destroy -auto-approve
     waitFor:
       - run checkov
+# WITH MULTIPLE TERRAFORM MODULE COULD DO A FOR LOOP
+# - id: terraform commands
+#   name: hashicorp/terraform:0.12.26
+#   entrypoint: "sh"
+#   args:
+#     - "-c"
+#     - |
+#       for tf in tfstate, vpc, cluster
+#       do
+#         cd tf
+#         terraform init
+#         terraform plan
+#         terraform apply -auto-approve
+#         checkov -d tf
+#         terraform destroy -auto-approve
+#       done
