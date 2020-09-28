@@ -98,7 +98,7 @@ steps:
         terraform destroy -auto-approve
     waitFor:
       - run checkov
-# WITH MULTIPLE TERRAFORM MODULE COULD DO A FOR LOOP
+# WITH MULTIPLE TERRAFORM MODULES YOU COULD DO A FOR LOOP
 # - id: terraform commands
 #   name: hashicorp/terraform:0.12.26
 #   entrypoint: "sh"
