@@ -1,4 +1,8 @@
 steps:
+  # When creating secrets, it's usually best practice to create
+  # a secret file with the contents there but to simplify for now
+  # I just used the GCP Cloud Build environment variables
+
   # setup aws directory
   - id: setup aws directory
     name: "ubuntu"
@@ -8,33 +12,47 @@ steps:
       - |
         echo 'Setting AWS CLI credentials...'
         mkdir -p ~/.aws
-        echo ${_AWS_ACCESS_KEY}
-  #       echo "[default]\nregion = us-east-1" >> ~/.aws/config
-  #       echo "[default]\naws_access_key_id = ${AWS_ACCESS_KEY_ID}\naws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
-  # # initialize the working Terraform directory
-  # - id: terraform init
-  #   name: hashicorp/terraform:0.12.26
-  #   entrypoint: "sh"
-  #   args:
-  #     - "-c"
-  #     - |
-  #       cd tfstate
-  #       terraform init
-  # # create an execution plan
-  # - id: terraform plan
-  #   name: hashicorp/terraform:0.12.26
-  #   entrypoint: "sh"
-  #   args:
-  #     - "-c"
-  #     - |
-  #       cd tfstate
-  #       terraform plan
-  # # apply the new or updated resources
-  # - id: terraform apply
-  #   name: hashicorp/terraform:0.12.26
-  #   entrypoint: "sh"
-  #   args:
-  #     - "-c"
-  #     - |
-  #       cd tfstate
-  #       terraform apply -auto-approve
+        echo "[default]\nregion = us-east-1" >> ~/.aws/config
+        echo "[default]\naws_access_key_id = ${_AWS_ACCESS_KEY}\naws_secret_access_key = ${_AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+
+  # initialize the working Terraform directory
+  - id: terraform init
+    name: hashicorp/terraform:0.12.26
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd tfstate
+        terraform init
+
+  # create an execution plan
+  - id: terraform plan
+    name: hashicorp/terraform:0.12.26
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd tfstate
+        terraform plan
+
+  # apply the new or updated resources
+  - id: terraform apply
+    name: hashicorp/terraform:0.12.26
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd tfstate
+        terraform apply -auto-approve
+
+  # NEED TO ADD CHECKOV STEP HERE
+
+  # destroy the Terraform managed infrastructure
+  - id: terraform destroy
+    name: hashicorp/terraform:0.12.26
+    entrypoint: "sh"
+    args:
+      - "-c"
+      - |
+        cd tfstate
+        terraform destroy -auto-approve
