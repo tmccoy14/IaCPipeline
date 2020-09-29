@@ -83,7 +83,7 @@ steps:
   - id: run checkov
     name: us.gcr.io/$PROJECT_ID/gcloud-python
     entrypoint: venv/bin/checkov
-    args: ["-d", "tfstate/"]
+    args: ["-d", "tfstate/", "-s"]
     waitFor:
       - terraform apply
 
